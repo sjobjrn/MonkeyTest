@@ -9,50 +9,26 @@ and deleted, so the script doesn't waste your drive
 
 (!) Be sure, that the file you point to is not something
     you need, cause it'll be overwritten during test
-
-Runs on both Python3 and 2, despite that I prefer 3
-Has been tested on 3.5 and 2.7 under ArchLinux
-Has been tested on 3.5.2 under Ubuntu Xenial
 '''
-from __future__ import division, print_function  # for compatability with py2
 
+
+# Miscellaneous operating system interfaces 
+# System-specific parameters and functions
 import os, sys
+# The shuffle() method takes a sequence, like a list, and reorganize the order of the items.
 from random import shuffle
+# Lib for cli interface
 import argparse
+# Pythons lib for json
 import json
-
-ASCIIART = r'''Brought to you by coding monkeys.
-Eat bananas, drink coffee & enjoy!
-                 _
-               ,//)
-               ) /
-              / /
-        _,^^,/ /
-       (G,66<_/
-       _/\_,_)    _
-      / _    \  ,' )
-     / /"\    \/  ,_\
-  __(,/   >  e ) / (_\.oO
-  \_ /   (   -,_/    \_/
-    U     \_, _)
-           (  /
-            >/
-           (.oO
-'''
-# ASCII-art: used part of text-image @ http://www.ascii-art.de/ascii/mno/monkey.txt
-# it seems that its original author is Mic Barendsz (mic aka miK)
-# text-image is a bit old (1999) so I couldn't find a way to communicate with author
-# if You're reading this and You're an author -- feel free to write me
-
-try:  # if Python >= 3.3 use new high-res counter
+# Import new high-res counter (Python >= 3.3)
+try:
     from time import perf_counter as time
-except ImportError:  # else select highest available resolution counter
-    if sys.platform[:3] == 'win':
-        from time import clock as time
-    else:
-        from time import time
+# Else print error
+except ImportError as e:
+    print(e)
 
-
+# Functions that holds all arguments
 def get_args():
     parser = argparse.ArgumentParser(description='Arguments', formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--file',
@@ -87,12 +63,22 @@ def get_args():
 
 
 class Benchmark:
-
+    '''
+    # Init method
+    # Initialize(assign values) to the data members of the class when an object of class is created
+    # The method is useful to do any initialization you want to do with your object.
+    '''
     def __init__(self, file,write_mb, write_block_kb, read_block_b):
         self.file = file
         self.write_mb = write_mb
         self.write_block_kb = write_block_kb
         self.read_block_b = read_block_b
+        '''
+        # wr_blocks 
+        # int( = The int() method returns an integer object from any number or string.
+        # self.write_mb * 1024 = Multiplication of variable
+        # / self.write_block_kb = Divided by Self.write_block_kb. The result always has type float.
+        '''
         wr_blocks = int(self.write_mb * 1024 / self.write_block_kb)
         rd_blocks = int(self.write_mb * 1024 * 1024 / self.read_block_b)
         self.write_results = self.write_test( 1024 * self.write_block_kb, wr_blocks)
@@ -104,9 +90,21 @@ class Benchmark:
         of blocks_count, each at size of block_size bytes to disk.
         Function returns a list of write times in sec of each block.
         '''
-        f = os.open(self.file, os.O_CREAT | os.O_WRONLY, 0o777)  # low-level I/O
 
+        '''
+        # os.open = Open the file path and set various flags according to flags and possibly its mode according to mode. 
+        # self.file = path
+        # os.O.CREAT = If the specified file does not exist, it may optionally (if O_CREAT is specified in flags) be created by open().
+        # os.O_WRONLY = The argument flags must include one of the following access modes: O_RDONLY, O_WRONLY, or O_RDWR.
+        # These request opening the file read-only, write-only, or read/write, respectively.
+        # 0o777 = A numeric value representing the mode of the newly opened file. The default value of this parameter is 0o777 (octal). (511)
+        '''
+        f = os.open(self.file, os.O_CREAT | os.O_WRONLY, 0o777)  # low-level I/O
+        
+        # list for time
         took = []
+        
+        # loop every int 
         for i in range(blocks_count):
             if show_progress:
                 # dirty trick to actually print progress on each iteration
@@ -165,7 +163,6 @@ class Benchmark:
             max=self.read_block_b / (1024 * 1024 * min(self.read_results)),
             min=self.read_block_b / (1024 * 1024 * max(self.read_results))))
         print(result)
-        print(ASCIIART)
 
 
     def get_json_result(self,output_file):
